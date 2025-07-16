@@ -12,8 +12,9 @@
             </div>
         @endsession
 
-        <form method="POST" action="{{ route('login') }}">
+        <form method="POST" action="{{ route('login') }}" id="login-form">
             @csrf
+            <input type="hidden" name="g-recaptcha-response" id="recaptcha">
 
             <div>
                 <x-label for="email" value="{{ __('Email') }}" />
@@ -44,5 +45,17 @@
                 </x-button>
             </div>
         </form>
+        <script>
+    grecaptcha.ready(function () {
+        document.getElementById('login-form').addEventListener("submit", function (e) {
+            e.preventDefault();
+            grecaptcha.execute('{{ config('services.recaptcha.site_key') }}', { action: 'login' }).then(function (token) {
+                document.getElementById('recaptcha').value = token;
+                e.target.submit();
+            });
+        });
+    });
+</script>
+
     </x-authentication-card>
 </x-guest-layout>

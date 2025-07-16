@@ -9,6 +9,7 @@ use App\Http\Controllers\BorrowBookController;
 use App\Http\Controllers\BorrowingHistoryController;
 use App\Http\Controllers\ReadeBooksController;
 use App\Http\Controllers\PenaltyNoticeController;
+use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
 use App\Http\Controllers\BorrowRequestController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\NotificationController;
@@ -37,6 +38,10 @@ Route::middleware([
     })->name('dashboard');
 });
 
+Route::post('/login', [AuthenticatedSessionController::class, 'store'])
+    ->middleware(['web', 'guest', 'recaptcha']) // 👈 add this
+    ->name('login');
+
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
@@ -46,7 +51,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/borrow-books/{book}', [BorrowBookController::class, 'store'])->name('borrow-books.store');
 });
 
-
 Route::get('/borrow-books', [BorrowBookController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('borrow-books');
@@ -55,9 +59,9 @@ Route::post('/borrow-books/{book}', [BorrowBookController::class, 'store'])
     ->middleware(['auth'])
     ->name('borrow-books.store');
 
-Route::post('/borrow-request/{book}', [BorrowRequestController::class, 'store'])
-    ->middleware(['auth', 'verified'])
-    ->name('borrow.request');
+// Route::post('/borrow-request/{book}', [BorrowRequestController::class, 'store'])
+//     ->middleware(['auth', 'verified'])
+//     ->name('borrow.request');
 
 Route::get('/my-borrowed-books', [MyBorrowedBooksController::class, 'index'])
     ->middleware(['auth', 'verified'])
