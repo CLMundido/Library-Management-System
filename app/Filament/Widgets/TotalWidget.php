@@ -19,7 +19,9 @@ class TotalWidget extends BaseWidget
     protected function getStats(): array
     {
         $totalUsers = [
-            Card::make('Total Users', User::count())
+            Card::make('Total Users', User::whereHas('roles', function ($query) {
+                $query->where('name', 'user'); // count only users with role 'user'
+            })->count())
                 ->description('Registered borrowers')
                 ->icon('heroicon-o-users')
                 ->color('success'),

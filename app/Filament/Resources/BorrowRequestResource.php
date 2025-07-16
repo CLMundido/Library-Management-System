@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope; // Keep if SoftDeletes trait is used on model
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\BorrowRequestStatusMail;
 
 class BorrowRequestResource extends Resource // Changed class name
 {
@@ -63,7 +65,7 @@ class BorrowRequestResource extends Resource // Changed class name
                     ->label('Request Date')
                     ->date('M j, Y g:i A')
                     ->sortable(),
-                
+
                 Tables\Columns\TextColumn::make('return_date')
                     ->label('Returned')
                     ->date('M j, Y')
@@ -145,20 +147,22 @@ class BorrowRequestResource extends Resource // Changed class name
                     ->visible(fn(BorrowRequest $record) => $record->status === 'pending')
                     ->action(function (BorrowRequest $record) {
                         $record->update(['status' => 'approved']);
-                        // Step 2: Insert into borrow_records
+
                         \App\Models\BorrowRecord::create([
                             'user_id' => $record->user_id,
                             'book_id' => $record->book_id,
                             'borrow_date' => now(),
-                            'due_date' => $record->return_date, // example due date
+                            'due_date' => $record->return_date,
                             'status' => "borrowed",
                         ]);
 
-                        // Optional: Decrease book stock
                         $book = \App\Models\Book::find($record->book_id);
                         if ($book && $book->copies > 0) {
                             $book->decrement('copies');
                         }
+
+                        // Send approval email
+                        Mail::to($record->user->email)->send(new BorrowRequestStatusMail($record));
                     })
                     ->requiresConfirmation(),
 
@@ -169,16 +173,9 @@ class BorrowRequestResource extends Resource // Changed class name
                     ->visible(fn(BorrowRequest $record) => $record->status === 'pending')
                     ->action(function (BorrowRequest $record) {
                         $record->update(['status' => 'rejected']);
-                    })
-                    ->requiresConfirmation(),
 
-                Tables\Actions\Action::make('cancel')
-                    ->label('Cancel')
-                    ->icon('heroicon-o-minus-circle')
-                    ->color('gray')
-                    ->visible(fn(BorrowRequest $record) => $record->status === 'pending')
-                    ->action(function (BorrowRequest $record) {
-                        $record->update(['status' => 'cancelled']);
+                        // Send rejection email
+                        Mail::to($record->user->email)->send(new BorrowRequestStatusMail($record));
                     })
                     ->requiresConfirmation(),
             ])
