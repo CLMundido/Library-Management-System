@@ -16,6 +16,17 @@
                 <div class="mb-4 text-red-600 font-medium">{{ session('error') }}</div>
             @endif
 
+            <!-- Search Bar -->
+            <form method="GET" action="{{ route('borrow-books') }}" class="mb-6">
+                <input 
+                    type="text" 
+                    name="search" 
+                    value="{{ request('search') }}"
+                    placeholder="Search books by title or author..." 
+                    class="w-full sm:w-1/2 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:border-blue-300"
+                >
+            </form>
+
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 @forelse ($books as $book)
                     <div class="bg-white p-4 shadow rounded-lg">

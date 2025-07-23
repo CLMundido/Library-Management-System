@@ -16,7 +16,8 @@ return new class extends Migration
             $table->string('cover_image')->nullable(); 
             $table->string('isbn')->unique()->nullable();
             $table->string('title');
-            $table->string('author');                   
+            $table->string('author');
+            $table->text('description')->nullable();                   
             $table->foreignId('book_category_id')->constrained()->onDelete('cascade');
             $table->integer('copies')->default(1);
             $table->enum('availability', ['available', 'out of stock'])->default('available');

@@ -64,10 +64,10 @@ class UserResource extends Resource
                     ->label('Verified')
                     ->sortable()
                     ->colors([
-                        'success' => fn ($state) => filled($state),
-                        'danger' => fn ($state) => empty($state),
+                        'success' => fn($state) => filled($state),
+                        'danger' => fn($state) => empty($state),
                     ])
-                    ->formatStateUsing(fn ($state) => $state ? 'Verified' : 'Unverified'),
+                    ->formatStateUsing(fn($state) => $state ? 'Verified' : 'Unverified'),
 
                 TextColumn::make('created_at')
                     ->label('Created')
@@ -84,7 +84,7 @@ class UserResource extends Resource
                 //
             ])
             ->actions([
-                // You can add edit if needed
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
@@ -102,8 +102,8 @@ class UserResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return (string) User::whereHas('roles', function ($query) {
-            $query->where('name', 'user');
+        return (string) User::whereDoesntHave('roles', function ($query) {
+            $query->where('name', 'admin');
         })->count();
     }
 
@@ -122,8 +122,8 @@ class UserResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->whereHas('roles', function ($query) {
-            $query->where('name', 'user');
+        return parent::getEloquentQuery()->whereDoesntHave('roles', function ($query) {
+            $query->where('name', 'admin');
         });
     }
 }

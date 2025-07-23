@@ -28,10 +28,6 @@
                         {{ __('Borrowing History') }}
                     </x-nav-link>
 
-                    <x-nav-link href="{{ route('read-ebooks') }}" :active="request()->routeIs('read-ebooks')">
-                        {{ __('Read eBooks') }}
-                    </x-nav-link>
-
                     <x-nav-link href="{{ route('penalty-notice') }}" :active="request()->routeIs('penalty-notice')">
                         {{ __('Penalty Notice') }}
                     </x-nav-link>

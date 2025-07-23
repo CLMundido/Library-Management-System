@@ -11,9 +11,18 @@ class BorrowBookController extends Controller
 {
     public function index()
     {
-        $books = Book::all(); // show all books regardless of stock
+        $search = request('search');
+
+        $books = Book::query()
+            ->when($search, function ($query, $search) {
+                $query->where('title', 'like', "%{$search}%")
+                    ->orWhere('author', 'like', "%{$search}%");
+            })
+            ->get();
+
         return view('borrow-books', compact('books'));
     }
+
 
     public function store(Request $request, Book $book)
     {

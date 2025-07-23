@@ -18,6 +18,7 @@ class CreateUser extends CreateRecord
         // Generate a secure random password
         $randomPassword = Str::random(12);
         $data['password'] = Hash::make($randomPassword);
+        $data['email_verified_at'] = now();
 
         // Send email to the user with their login details
         Mail::to($data['email'])->send(new \App\Mail\UserAccountCreated(

@@ -12,6 +12,10 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
+
 
 class BookResource extends Resource
 {
@@ -26,7 +30,7 @@ class BookResource extends Resource
     protected static ?string $pluralModelLabel = "Books";
 
     protected static ?string $navigationGroup = "Book Management";
-    
+
     protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
@@ -36,6 +40,7 @@ class BookResource extends Resource
                 Forms\Components\Section::make('Book Information')
                     ->schema([
                         Forms\Components\FileUpload::make('cover_image')
+                            ->label('Upload Cover')
                             ->image()
                             ->imageEditor()
                             ->imageResizeMode('cover')
@@ -50,13 +55,33 @@ class BookResource extends Resource
                                 Forms\Components\TextInput::make('isbn')
                                     ->label('ISBN')
                                     ->maxLength(17)
-                                    ->helperText('International Standard Book Number')
-                                    ->unique(ignoreRecord: true)
-                                    ->rule('regex:/^(?=(?:\D*\d){10}(?:(?:\D*\d){3})?$)[\d-]+$/')
                                     ->required()
-                                    ->validationMessages([
-                                        'regex' => 'Please enter a valid ISBN format'
-                                    ]),
+                                    ->helperText('Auto-fill book information when a valid ISBN exists in Google Books')
+                                    ->unique(ignoreRecord: true)
+                                    ->afterStateUpdated(function ($state, callable $set) {
+                                        if (!filled($state)) return;
+
+                                        $response = Http::get("https://www.googleapis.com/books/v1/volumes?q=isbn:{$state}");
+
+                                        if ($response->successful() && $response['totalItems'] > 0) {
+                                            $book = $response['items'][0]['volumeInfo'];
+
+                                            $set('title', $book['title'] ?? '');
+                                            $set('author', is_array($book['authors']) ? implode(', ', $book['authors']) : ($book['authors'] ?? ''));
+                                            $set('description', $book['description'] ?? '');
+
+                                            // Optional: show a toast
+                                            \Filament\Notifications\Notification::make()
+                                                ->title('Book info fetched from Google Books.')
+                                                ->success()
+                                                ->send();
+                                        } else {
+                                            \Filament\Notifications\Notification::make()
+                                                ->title('No book found for this ISBN.')
+                                                ->warning()
+                                                ->send();
+                                        }
+                                    }),
 
                                 Forms\Components\Select::make('book_category_id')
                                     ->label('Category')
@@ -79,6 +104,11 @@ class BookResource extends Resource
                             ->required()
                             ->maxLength(255)
                             ->columnSpan(2),
+
+                        Forms\Components\Textarea::make('description')
+                            ->rows(5)
+                            ->columnSpanFull()
+                            ->label('Book Description'),
                     ])
                     ->columns(2),
 
@@ -161,7 +191,7 @@ class BookResource extends Resource
             ->filters([
                 SelectFilter::make('book_category_id')
                     ->label('Category')
-                    ->options(fn () => BookCategory::pluck('name', 'id')->toArray())
+                    ->options(fn() => BookCategory::pluck('name', 'id')->toArray())
                     ->searchable(),
             ])
             ->actions([
