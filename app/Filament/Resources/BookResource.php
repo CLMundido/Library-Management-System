@@ -165,16 +165,16 @@ class BookResource extends Resource
                     ->sortable()
                     ->alignCenter(),
 
-                Tables\Columns\BadgeColumn::make('availability')
-                    ->colors([
-                        'success' => 'available',
-                        'danger' => 'out of stock',
-                    ])
-                    ->icons([
-                        'heroicon-o-check-circle' => 'available',
-                        'heroicon-o-x-circle' => 'out of stock',
-                    ])
-                    ->sortable(),
+                // Tables\Columns\BadgeColumn::make('availability')
+                //     ->colors([
+                //         'success' => 'available',
+                //         'danger' => 'out of stock',
+                //     ])
+                //     ->icons([
+                //         'heroicon-o-check-circle' => 'available',
+                //         'heroicon-o-x-circle' => 'out of stock',
+                //     ])
+                //     ->sortable(),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Added')
