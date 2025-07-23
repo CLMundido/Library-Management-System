@@ -20,14 +20,5 @@ class AdminSeeder extends Seeder
             ]
         );
         $admin->assignRole('admin');
-
-        $user = User::updateOrCreate(
-            ['email' => 'rulostbabygirl00@gmail.com'],
-            [
-                'name' => 'User 1',
-                'password' => Hash::make('password123') // Or use env('DEFAULT_ADMIN_PASSWORD')
-            ]
-        );
-        $user->assignRole('user');
     }
 }
