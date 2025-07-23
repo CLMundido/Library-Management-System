@@ -28,7 +28,7 @@
             </form>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                @forelse ($books as $book)
+                @forelse ($books->sortByDesc('copies') as $book)
                     <div class="bg-white p-4 shadow rounded-lg">
                         <div class="h-48 bg-gray-100 rounded mb-2 flex items-center justify-center">
                             @if ($book->cover_image)

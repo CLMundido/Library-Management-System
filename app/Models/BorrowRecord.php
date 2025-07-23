@@ -19,7 +19,7 @@ class BorrowRecord extends Model
         'borrow_date',
         'due_date',
         'return_date',
-        'ststus',
+        'status',
     ];
 
     public function book(): BelongsTo

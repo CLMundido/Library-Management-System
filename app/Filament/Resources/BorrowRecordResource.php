@@ -109,13 +109,13 @@ class BorrowRecordResource extends Resource
                         if ($record->return_date) {
                             $dueDate = Carbon::parse($record->due_date)->startOfDay();
                             $returnedDate = Carbon::parse($record->return_date)->startOfDay();
-                            
+
                             // If returned date surpasses (is after) due date, show days overdue
                             if ($returnedDate->greaterThan($dueDate)) {
                                 $days = $dueDate->diffInDays($returnedDate);
                                 return $days . ' day' . ($days !== 1 ? 's' : '');
                             }
-                            
+
                             // If returned on time or early, show nothing
                             return '';
                         }
@@ -150,7 +150,7 @@ class BorrowRecordResource extends Resource
                                 ELSE 0
                             END as calculated_days_overdue
                         ')
-                        ->orderBy('calculated_days_overdue', $direction);
+                            ->orderBy('calculated_days_overdue', $direction);
                     })
                     ->toggleable(),
 
@@ -249,6 +249,11 @@ class BorrowRecordResource extends Resource
                             'return_date' => now(),
                             'status' => 'Returned',
                         ]);
+
+                        // ✅ Increment book copies
+                        if ($record->book) {
+                            $record->book->increment('copies');
+                        }
                     })
                     ->requiresConfirmation(),
 
@@ -273,6 +278,11 @@ class BorrowRecordResource extends Resource
                                     'return_date' => now(),
                                     'status' => 'Returned',
                                 ]);
+
+                                // ✅ Increment book copies
+                                if ($record->book) {
+                                    $record->book->increment('copies');
+                                }
                             });
                         })
                         ->requiresConfirmation(),
@@ -293,14 +303,12 @@ class BorrowRecordResource extends Resource
             ])
             ->defaultSort('borrow_date', 'desc')
             ->striped()
-            ->poll('30s'); // Reduced from 60s to 30s for more frequent updates
+            ->poll('30s');
     }
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array

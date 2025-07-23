@@ -18,11 +18,11 @@ class BorrowBookController extends Controller
                 $query->where('title', 'like', "%{$search}%")
                     ->orWhere('author', 'like', "%{$search}%");
             })
+            ->orderByDesc('copies') // ✅ Available books first, out of stock last
             ->get();
 
         return view('borrow-books', compact('books'));
     }
-
 
     public function store(Request $request, Book $book)
     {
